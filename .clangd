@@ -1,0 +1,15 @@
+CompileFlags:
+  Add:
+    - --no-cuda-version-check
+    - --cuda-path=/opt/cuda
+    - -I=./cuda-sample1-lib/include
+    - -I=./tests/include
+    - -I=./benchmarks/include
+    - -I=./build/_deps/indicators-src/include
+  Remove:
+    - -rdc=true
+    - -gencode
+    - --generate-code=arch=compute_52,code=[compute_52,sm_52]
+    - --options-file
+    - -arch=native
+    - -forward-unknown-to-host-compiler
