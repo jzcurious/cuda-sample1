@@ -63,6 +63,7 @@ class TimeIt final {
       for (uint i = 0; i < mode.warmup; ++i) target(std::forward<ArgTs>(args)...);
 
     for (uint i = 0; i < mode.repeat; ++i) {
+      cudaDeviceSynchronize();
       cudaEventRecord(start);
       target(std::forward<ArgTs>(args)...);
       cudaEventRecord(end);
