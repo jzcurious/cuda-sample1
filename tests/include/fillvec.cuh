@@ -66,7 +66,7 @@ void fill_normal(VecT& vec, GenT& gen, std::normal_distribution<>& dist) {
   if (located_on_device) vec.to_device();
 }
 
-template <ItemT T>
+template <ItemKind T>
 Vec<T> random_vec_m5s2(size_t n, Loc loc = Loc::Host) {
   static std::mt19937 r;
   static detail::DefaultGenerators gens(r());
@@ -85,7 +85,7 @@ Vec<T> random_vec_m5s2(size_t n, Loc loc = Loc::Host) {
   return vec;
 }
 
-template <ItemT T, GeneratorKind GenT>
+template <ItemKind T, GeneratorKind GenT>
 Vec<T> random_vec_m5s2(size_t n, GenT& gen, Loc loc = Loc::Host) {
   Vec<T> vec(n, loc);
   auto dist = std::normal_distribution<>(5, 2);

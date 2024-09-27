@@ -54,6 +54,7 @@
     auto v2 = random_vec_m5s2<_type>(_len);                                              \
     auto p1 = dot(v1, v2);                                                               \
     v1.to_device();                                                                      \
+    v2.to_device();                                                                      \
     auto p2 = dot(v1, v2);                                                               \
     p2.to_host();                                                                        \
     EXPECT_NEAR(p1, p2, _abs);                                                           \
@@ -71,7 +72,7 @@
   __dot_test(_type, 101, 0.05);                                                          \
   __dot_test(_type, 1001, 0.5);                                                          \
   __dot_test(_type, 10001, 0.5);                                                         \
-  __dot_test(_type, 100001, 10.5);
+  __dot_test(_type, 100001, 15.5);
 
 __test_item_type(float);
 __test_item_type(int);

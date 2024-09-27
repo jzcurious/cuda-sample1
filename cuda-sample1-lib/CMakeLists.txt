@@ -15,6 +15,7 @@ set_target_properties(cuda-sample1-lib PROPERTIES CUDA_ARCHITECTURES "native")
 
 if(CMAKE_BUILD_TYPE MATCHES "DebugDevice")
     message(STATUS "Device debugging mode is enabled")
+    target_compile_definitions(cuda-sample1-lib PRIVATE DEBUG=1)
     target_compile_options(cuda-sample1-lib
         PUBLIC $<$<COMPILE_LANGUAGE:CUDA>:-g -G>
     )
@@ -22,6 +23,7 @@ endif()
 
 if(CMAKE_BUILD_TYPE MATCHES "DebugHost")
     message(STATUS "Host debugging mode is enabled")
+    target_compile_definitions(cuda-sample1-lib PRIVATE DEBUG=1)
     target_compile_options(cuda-sample1-lib PUBLIC
         $<$<COMPILE_LANGUAGE:CUDA>:-g -Xcompiler -fsanitize=address -fsanitize=undefined>
     )

@@ -18,6 +18,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(argparse)
 
 add_executable(dotbench
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/timers.cu
     ${CMAKE_CURRENT_SOURCE_DIR}/src/dotbench.cu
 )
 

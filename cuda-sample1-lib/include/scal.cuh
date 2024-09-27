@@ -2,12 +2,9 @@
 #define _SCAL_CUH_
 
 #include "dynblock.cuh"
-#include "itemt.cuh"
+#include "tkinds.cuh"
 
-template <class... Ts>
-concept ScalKind = requires() { (typename std::decay_t<Ts>::scal_f(), ...); };
-
-template <ItemT T>
+template <ItemKind T>
 class Scal final : public DynBlock {
  public:
   struct scal_f {};

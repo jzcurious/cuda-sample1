@@ -2,8 +2,10 @@
 #include "benchmark.cuh"
 #include "dotprod.cuh"
 #include "fillvec.cuh"
-#include "itemt.cuh"
+#include "timers.cuh"
+#include "tkinds.cuh"
 #include "vec.cuh"
+#include "vecview.cuh"
 
 #include <functional>
 
@@ -12,19 +14,27 @@ size_t growth_linear100(size_t n, size_t bias) {
 }
 
 size_t growth_exp10(size_t n, size_t bias) {
-  return 2 << n + bias;
+  return std::pow(10, n) + bias;
 }
 
-template <Loc loc, ItemT T>
-std::tuple<Vec<T>, Vec<T>> gen_vectors(size_t len) {
-  return {random_vec_m5s2<T>(len, loc), random_vec_m5s2<T>(len, loc)};
-}
+template <ItemKind T>
+class VecProvider final {
+ private:
+  Vec<T> _v1;
+  Vec<T> _v2;
 
-using dot_bench_host_t = Benchmark<&dot<float>, &gen_vectors<Loc::Host, float>>;
+ public:
+  VecProvider(size_t max_len, Loc loc)
+      : _v1(random_vec_m5s2<float>(max_len, Loc::Device))
+      , _v2(random_vec_m5s2<float>(max_len, Loc::Device)) {
+    _v1.to(loc);
+    _v2.to(loc);
+  }
 
-using dot_bench_device_t = Benchmark<&dot<float>,
-    &gen_vectors<Loc::Device, float>,
-    TimeItMode{.cuda_only = true}>;
+  std::tuple<VecView<T>, VecView<T>> operator()(size_t j) const {
+    return {VecView<T>(_v1, 0, j + 1), VecView<T>(_v2, 0, j + 1)};
+  }
+};
 
 int main(int argc, char* argv[]) {
   argparse::ArgumentParser program("dotbench");
@@ -72,15 +82,18 @@ int main(int argc, char* argv[]) {
             ? std::bind(&growth_exp10, std::placeholders::_1, bias)
             : std::bind(&growth_linear100, std::placeholders::_1, bias);
 
+  Loc loc = program["--device"] == true ? Loc::Device : Loc::Host;
+  VecProvider<float> vp(growth(nprobes - 1), loc);
+
   if (program["--device"] == true) {
-    dot_bench_device_t{"Device"}
-        .run(growth, nprobes, "Device")
+    Benchmark("GPU", GPUTimer{}, vp, growth, dot_views<float>, 2)
+        .run(nprobes, true)
         .export_to_csv(fname.c_str(), "Length,Time");
     return 0;
   }
 
-  dot_bench_host_t{"Host"}
-      .run(growth, nprobes, "Host")
+  Benchmark("CPU", CPUTimer{}, vp, growth, dot_views<float>, 2)
+      .run(nprobes, true)
       .export_to_csv(fname.c_str(), "Length,Time");
   return 0;
 }

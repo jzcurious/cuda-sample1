@@ -1,78 +1,37 @@
 #ifndef _TIMEIT_CUH_
 #define _TIMEIT_CUH_
 
-#include <chrono>
-#include <concepts>
-#include <cuda_runtime.h>
+#include "timers.cuh"
+
 #include <sys/types.h>
 #include <vector>
 
-struct TimeItMode final {
-  uint repeat = 3;
-  uint warmup = 1;
-  bool cuda_used = false;
-  bool cuda_only = false;
-};
-
-using measurements_t = std::vector<double>;
-
-template <auto target, TimeItMode mode = TimeItMode{}>
+template <TimerKind TimerT, class TargetT>
 class TimeIt final {
  private:
-  measurements_t _measurements;
-
-  using target_t = decltype(target);
+  const TargetT& _target;
+  const uint _nwarmups;
+  const uint _nrepeats;
+  std::vector<double> _measurements;
 
  public:
-  void reset() {
-    _measurements.clear();
-  }
+  TimeIt(const TargetT& target, uint nrepeats = 1, uint nwarmups = 0)
+      : _target(target)
+      , _nwarmups(nwarmups)
+      , _nrepeats(nrepeats) {}
 
   template <class... ArgTs>
-    requires(std::invocable<target_t, ArgTs...> && not mode.cuda_only)
+    requires(std::invocable<TargetT, ArgTs...>)
   double run(ArgTs&&... args) {
+    for (uint i = 0; i < _nwarmups; ++i) _target(std::forward<ArgTs>(args)...);
+
     double total = 0;
-
-    if constexpr (mode.warmup)
-      for (uint i = 0; i < mode.warmup; ++i) target(std::forward<ArgTs>(args)...);
-
-    for (uint i = 0; i < mode.repeat; ++i) {
-      if constexpr (mode.cuda_used) cudaDeviceSynchronize();
-      const auto start = std::chrono::high_resolution_clock::now();
-      target(std::forward<ArgTs>(args)...);
-      if constexpr (mode.cuda_used) cudaDeviceSynchronize();
-      const auto end = std::chrono::high_resolution_clock::now();
-      total += std::chrono::duration<double>(end - start).count();  // s
+    for (uint i = 0; i < _nrepeats; ++i) {
+      TimerT t(total);  // NOLINT
+      _target(std::forward<ArgTs>(args)...);
     }
 
-    _measurements.push_back(total / mode.repeat);
-    return last();
-  }
-
-  template <class... ArgTs>
-    requires(std::invocable<target_t, ArgTs...> && mode.cuda_only)
-  double run(ArgTs&&... args) {
-    double total = 0;
-
-    float diff;
-    cudaEvent_t start, end;
-    cudaEventCreate(&start);
-    cudaEventCreate(&end);
-
-    if constexpr (mode.warmup)
-      for (uint i = 0; i < mode.warmup; ++i) target(std::forward<ArgTs>(args)...);
-
-    for (uint i = 0; i < mode.repeat; ++i) {
-      cudaDeviceSynchronize();
-      cudaEventRecord(start);
-      target(std::forward<ArgTs>(args)...);
-      cudaEventRecord(end);
-      cudaEventSynchronize(end);
-      cudaEventElapsedTime(&diff, start, end);  // ms
-      total += static_cast<double>(diff) / 1000;
-    }
-
-    _measurements.push_back(total / mode.repeat);
+    _measurements.push_back(total / _nrepeats);
     return last();
   }
 
@@ -81,8 +40,12 @@ class TimeIt final {
     return _measurements.back();
   }
 
-  const measurements_t& measurements() const {
+  const std::vector<double>& measurements() const {
     return _measurements;
+  }
+
+  void reset() {
+    _measurements.clear();
   }
 };
 

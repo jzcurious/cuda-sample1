@@ -2,12 +2,9 @@
 #define _VEC_CUH_
 
 #include "dynblock.cuh"
-#include "itemt.cuh"
+#include "tkinds.cuh"
 
-template <class... Ts>
-concept VecKind = requires() { (typename std::decay_t<Ts>::vec_f(), ...); };
-
-template <ItemT T>
+template <ItemKind T>
 class Vec final : public DynBlock {
  private:
   size_t _len;
