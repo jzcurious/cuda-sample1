@@ -115,7 +115,7 @@ class Benchmark final {
   Benchmark& run(size_t nprobes, bool) {
     auto pbar = detail::make_pbar(_name);
     for (size_t i = 0; i < nprobes; ++i) {
-      detail::ProgressBarPusher{pbar, i, nprobes};  // NOLINT
+      detail::ProgressBarPusher bpp(pbar, i, nprobes);  // NOLINT
       _job_sizes.push_back(_growth(i));
       auto args = _job(_job_sizes.back());
       _apply_timeit(args, detail::make_indices_for_tuple(args));
