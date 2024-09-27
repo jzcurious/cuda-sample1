@@ -14,14 +14,10 @@
 
 namespace detail {
 
-template <size_t persist_coeff, ItemKind T>
-__global__ void dot_persistent_kernel(const T* a, const T* b, T* c, size_t len) {
-  size_t from = persist_coeff * (blockIdx.x * blockDim.x + threadIdx.x);
-  size_t to = from + persist_coeff;
-
-  T acc = 0;
-  for (size_t i = from; i < to and i < len; ++i) acc += a[i] * b[i];
-  atomicAdd(c, acc);
+template <ItemKind T>
+__global__ void dot_naive_kernel(const T* a, const T* b, T* c, size_t len) {
+  size_t i = blockIdx.x * blockDim.x + threadIdx.x;
+  if (i < len) atomicAdd(c, a[i] * b[i]);
 }
 
 template <ItemKind T>
@@ -46,11 +42,11 @@ Scal<T> dot_views(const VecView<T>& vec_a, const VecView<T>& vec_b) {
     return product;
   }
 
-  size_t grid_size = eval_grid_size_persist(len);
+  size_t grid_size = eval_grid_size(len);
   Scal<T> product(0, Loc::Device);
 
-  detail::dot_persistent_kernel<persist_coeff>
-      <<<grid_size, block_size>>>(vec_a.data(), vec_b.data(), product.data(), len);
+  detail::dot_naive_kernel<<<grid_size, block_size>>>(
+      vec_a.data(), vec_b.data(), product.data(), len);
   return product;
 }
 
