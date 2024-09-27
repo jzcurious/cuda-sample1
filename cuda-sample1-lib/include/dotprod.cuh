@@ -7,7 +7,7 @@
 #include "vecview.cuh"
 
 #ifdef DEBUG
-  #include <exception>
+  #include <stdexcept>
 #endif
 
 #include <cuda_runtime.h>
