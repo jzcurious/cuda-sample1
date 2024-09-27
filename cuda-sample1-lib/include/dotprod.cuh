@@ -35,16 +35,15 @@ template <ItemKind T>
 Scal<T> dot_views(const VecView<T>& vec_a, const VecView<T>& vec_b) {
 #ifdef DEBUG
   if (vec_a.loc() != vec_b.loc())
-    throw std::invalid_argument("the different location of the arguments is not
-    allowed");
+    throw std::invalid_argument("the different location of the arguments is not allowed");
 #endif
 
   size_t len = std::min(vec_a.len(), vec_b.len());
 
   if (vec_a.is_on_host()) {
-      Scal<T> product(0, Loc::Host);
-      detail::dot_host(vec_a.data(), vec_b.data(), product.data(), len);
-      return product;
+    Scal<T> product(0, Loc::Host);
+    detail::dot_host(vec_a.data(), vec_b.data(), product.data(), len);
+    return product;
   }
 
   size_t grid_size = eval_grid_size_persist(len);
