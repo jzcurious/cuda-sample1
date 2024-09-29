@@ -14,13 +14,22 @@
 
 namespace detail {
 
+// template <size_t persist_coeff, ItemKind T>
+// __global__ void dot_persistent_kernel(const T* a, const T* b, T* c, size_t len) {
+//   size_t from = persist_coeff * (blockIdx.x * blockDim.x + threadIdx.x);
+//   size_t to = from + persist_coeff;
+
+//   T acc = 0;
+//   for (size_t i = from; i < to and i < len; ++i) acc += a[i] * b[i];
+//   atomicAdd(c, acc);
+// }
+
 template <size_t persist_coeff, ItemKind T>
 __global__ void dot_persistent_kernel(const T* a, const T* b, T* c, size_t len) {
-  size_t from = persist_coeff * (blockIdx.x * blockDim.x + threadIdx.x);
-  size_t to = from + persist_coeff;
+  size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
   T acc = 0;
-  for (size_t i = from; i < to and i < len; ++i) acc += a[i] * b[i];
+  for (size_t j = 0; j < persist_coeff and i + j < len; ++j) acc += a[i + j] * b[i + j];
   atomicAdd(c, acc);
 }
 
