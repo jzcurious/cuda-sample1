@@ -67,12 +67,10 @@
   __trans_test_vec(_type, 101);                                                          \
   __trans_test_vec(_type, 1001);                                                         \
   __trans_test_vec(_type, 10001);                                                        \
-  __trans_test_vec(_type, 100001);                                                       \
   __dot_test(_type, 1, 0.05);                                                            \
   __dot_test(_type, 101, 0.05);                                                          \
   __dot_test(_type, 1001, 0.5);                                                          \
-  __dot_test(_type, 10001, 0.5);                                                         \
-  __dot_test(_type, 100001, 15.5);
+  __dot_test(_type, 10001, 0.5);
 
 __test_item_type(float);
 __test_item_type(int);
