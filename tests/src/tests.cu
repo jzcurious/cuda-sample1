@@ -35,7 +35,7 @@
 
 #define __trans_test_vec(_type, _len)                                                    \
   TEST(TransTest, _type##Vec##Len##_len) {                                               \
-    auto v1 = random_vec_m5s2<_type>(_len);                                              \
+    auto v1 = random_vec_m1s2<_type>(_len);                                              \
     auto v2 = Vec<_type>(_len, Loc::Device);                                             \
     v2 = v1;                                                                             \
     v1.to_device();                                                                      \
@@ -50,8 +50,8 @@
 
 #define __dot_test(_type, _len, _abs)                                                    \
   TEST(DotTest, _type##Len##_len) {                                                      \
-    auto v1 = random_vec_m5s2<_type>(_len);                                              \
-    auto v2 = random_vec_m5s2<_type>(_len);                                              \
+    auto v1 = random_vec_m1s2<_type>(_len);                                              \
+    auto v2 = random_vec_m1s2<_type>(_len);                                              \
     auto p1 = dot(v1, v2);                                                               \
     v1.to_device();                                                                      \
     v2.to_device();                                                                      \

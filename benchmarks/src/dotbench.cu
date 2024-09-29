@@ -25,8 +25,8 @@ class VecProvider final {
 
  public:
   VecProvider(size_t max_len, Loc loc)
-      : _v1(random_vec_m5s2<float>(max_len, Loc::Device))
-      , _v2(random_vec_m5s2<float>(max_len, Loc::Device)) {
+      : _v1(random_vec_m1s2<float>(max_len, Loc::Device))
+      , _v2(random_vec_m1s2<float>(max_len, Loc::Device)) {
     _v1.to(loc);
     _v2.to(loc);
   }

@@ -29,8 +29,10 @@ __global__ void dot_persistent_kernel(const T* a, const T* b, T* c, size_t len) 
   size_t i = blockIdx.x * blockDim.x + threadIdx.x;
 
   T acc = 0;
-  for (size_t j = 0; (j < persist_coeff) and (i + j * persist_coeff < len); ++j)
-    acc += a[i + j * persist_coeff] * b[i + j * persist_coeff];
+  for (size_t j = 0; j < persist_coeff; ++j) {
+    size_t k = i + j * persist_coeff;
+    if (k < len) acc += a[k] * b[k];
+  }
   atomicAdd(c, acc);
 }
 
